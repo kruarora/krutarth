@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Fun Game Zone</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
+        .game-section { display: none; padding: 20px; border: 2px solid #4CAF50; border-radius: 10px; margin: 20px auto; max-width: 600px; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; background-color: #4CAF50; color: white; border: none; border-radius: 5px; }
+        button:hover { background-color: #45a049; }
+        .active { display: block; }
+        #game-nav { margin-bottom: 20px; }
+        .card { display: inline-block; width: 60px; height: 60px; margin: 5px; padding: 10px; background: #4CAF50; cursor: pointer; border-radius: 5px; line-height: 60px; font-size: 24px; color: transparent; }
+        .revealed { color: white !important; background: #45a049 !important; }
+    </style>
+</head>
+<body>
+    <h1>🎮 Fun Game Zone</h1>
+    
+    <div id="game-nav">
+        <button onclick="showGame('rps')">Rock Paper Scissors</button>
+        <button onclick="showGame('memory')">Memory Game</button>
+        <button onclick="showGame('click')">Click Speed Test</button>
+    </div>
+
+    <!-- Rock Paper Scissors Game -->
+    <div id="rps" class="game-section active">
+        <h2>✊ ✋ ✌️</h2>
+        <button onclick="playGame('rock')">Rock</button>
+        <button onclick="playGame('paper')">Paper</button>
+        <button onclick="playGame('scissors')">Scissors</button>
+        <p id="result">Choose your weapon!</p>
+        <p>Score: <span id="score">0</span></p>
+    </div>
+
+    <!-- Memory Game -->
+    <div id="memory" class="game-section">
+        <h2>🧠 Memory Game</h2>
+        <div id="memory-grid"></div>
+        <p>Moves: <span id="moves">0</span> | Time: <span id="timer">0</span>s</p>
+        <button onclick="startMemoryGame()">New Game</button>
+    </div>
+
+    <!-- Click Speed Test -->
+    <div id="click" class="game-section">
+        <h2>⚡ Click Speed Test</h2>
+        <button id="click-button" onclick="countClick()">Click Me!</button>
+        <p>Time Left: <span id="time-left">10</span>s</p>
+        <p>Clicks: <span id="clicks">0</span></p>
+        <button onclick="startClickTest()">Start Game</button>
+    </div>
+
+    <script>
+        // Game navigation
+        function showGame(gameId) {
+            document.querySelectorAll('.game-section').forEach(div => div.classList.remove('active'));
+            document.getElementById(gameId).classList.add('active');
+        }
+
+        // Rock Paper Scissors
+        let score = 0;
+        function playGame(playerChoice) {
+            const choices = ['rock', 'paper', 'scissors'];
+            const computerChoice = choices[Math.floor(Math.random() * 3)];
+            const result = document.getElementById('result');
+            
+            if (playerChoice === computerChoice) {
+                result.textContent = `Tie! Both chose ${playerChoice}`;
+            } else if (
+                (playerChoice === 'rock' && computerChoice === 'scissors') ||
+                (playerChoice === 'paper' && computerChoice === 'rock') ||
+                (playerChoice === 'scissors' && computerChoice === 'paper')
+            ) {
+                result.textContent = `You win! ${playerChoice} beats ${computerChoice}`;
+                document.getElementById('score').textContent = ++score;
+            } else {
+                result.textContent = `You lose! ${computerChoice} beats ${playerChoice}`;
+            }
+        }
+
+        // Memory Game
+        let memoryGame = {
+            cards: ['🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼'],
+            revealedCards: [],
+            moves: 0,
+            timer: null,
+            time: 0
+        };
+
+        function startMemoryGame() {
+            clearInterval(memoryGame.timer);
+            memoryGame.revealedCards = [];
+            memoryGame.moves = 0;
+            memoryGame.time = 0;
+            document.getElementById('moves').textContent = '0';
+            document.getElementById('timer').textContent = '0';
+            
+            let gameCards = [...memoryGame.cards, ...memoryGame.cards]
+                .sort(() => Math.random() - 0.5);
+            
+            const grid = document.getElementById('memory-grid');
+            grid.innerHTML = gameCards.map(card => 
+                `<div class="card" onclick="revealCard(this)">${card}</div>`
+            ).join('');
+            
+            memoryGame.timer = setInterval(() => {
+                document.getElementById('timer').textContent = ++memoryGame.time;
+            }, 1000);
+        }
+
+        function revealCard(card) {
+            if (card.classList.contains('revealed') || memoryGame.revealedCards.length === 2) return;
+            
+            card.classList.add('revealed');
+            memoryGame.revealedCards.push(card);
+            
+            if (memoryGame.revealedCards.length === 2) {
+                memoryGame.moves++;
+                document.getElementById('moves').textContent = memoryGame.moves;
+                
+                if (memoryGame.revealedCards[0].textContent === memoryGame.revealedCards[1].textContent) {
+                    memoryGame.revealedCards = [];
+                } else {
+                    setTimeout(() => {
+                        memoryGame.revealedCards.forEach(c => c.classList.remove('revealed'));
+                        memoryGame.revealedCards = [];
+                    }, 1000);
+                }
+            }
+        }
+
+        // Click Speed Test
+        let clickCount = 0;
+        let clickTimer = null;
+        function startClickTest() {
+            clickCount = 0;
+            document.getElementById('clicks').textContent = '0';
+            document.getElementById('time-left').textContent = '10';
+            document.getElementById('click-button').disabled = false;
+            
+            let timeLeft = 10;
+            clickTimer = setInterval(() => {
+                document.getElementById('time-left').textContent = --timeLeft;
+                if (timeLeft <= 0) {
+                    clearInterval(clickTimer);
+                    document.getElementById('click-button').disabled = true;
+                }
+            }, 1000);
+        }
+
+        function countClick() {
+            document.getElementById('clicks').textContent = ++clickCount;
+        }
+    </script>
+</body>
+</html>
